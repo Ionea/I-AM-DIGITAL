@@ -1,0 +1,569 @@
+var createScene = function () {
+    // This creates a basic Babylon Scene object (non-mesh)
+    var scene = new BABYLON.Scene(engine);
+
+    // This creates and positions a free camera (non-mesh)
+    var camera = new BABYLON.ArcRotateCamera("camera", 33, BABYLON.Tools.ToRadians(77.3), 200, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, true);
+
+    camera.lowerRadiusLimit = 3;
+    camera.upperRadiusLimit = 320;
+    
+    // This targets the camera to scene origin
+    camera.setTarget(BABYLON.Vector3.Zero());
+
+    // This attaches the camera to the canvas
+    camera.attachControl(canvas, true);
+
+    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+    var light = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(0,0,0), scene);
+    var light2 = new BABYLON.HemisphericLight("hemiLight2", new BABYLON.Vector3(200,-1,-200), scene);
+    var light3 = new BABYLON.DirectionalLight("directional1", new BABYLON.Vector3(30,10,-60), scene);
+
+    // Default intensity is 1. Let's dim the light a small amount
+    light.intensity = 0.3;
+    light2.intensity = 0.3;
+    light3.intensity = 0.3;
+
+var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:550.0}, scene);
+	var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+	skyboxMaterial.backFaceCulling = false;
+    var files = [
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/artificial-grass-turf-pros-cons-pexels-free-nature-stock-7174-1366x768.webp",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/top.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/artificial-grass-turf-pros-cons-pexels-free-nature-stock-7174-1366x768.webp",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/artificial-grass-turf-pros-cons-pexels-free-nature-stock-7174-1366x768.webp",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/bottom.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/artificial-grass-turf-pros-cons-pexels-free-nature-stock-7174-1366x768.webp"
+    ];
+	// skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture.CreateFromImages(files, scene);
+	// skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+	// skyboxMaterial.disableLighting = true;
+	// skybox.material = skyboxMaterial;
+
+    scene.onPointerDown = function(evt, pickInfo) {
+    if (pickInfo.hit && (pickInfo.pickedMesh.name.includes("BOX") || pickInfo.pickedMesh.name.includes("Box") || pickInfo.pickedMesh.name.includes("Mesh"))) {
+        // Focus on the picked mesh if it is the one you're interested in
+        camera.focusOn([pickInfo.pickedMesh], true);
+    }
+};
+
+
+    //  var skybox = BABYLON.Mesh.CreateBox("BackgroundSkybox", 500, scene, undefined, BABYLON.Mesh.BACKSIDE);
+    
+    // // Create and tweak the background material.
+    var backgroundMaterial = new BABYLON.BackgroundMaterial("backgroundMaterial", scene);
+    backgroundMaterial.reflectionTexture = new BABYLON.CubeTexture.CreateFromImages(files, scene);
+    backgroundMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+    skybox.material = backgroundMaterial;
+    const eqTexture = new BABYLON.EquiRectangularCubeTexture('https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg', scene, 512);
+
+    // const woodPlank = BABYLON.MeshBuilder.CreateBox("plane", { width: 65, height: 1, depth: 65 }, scene);
+// const wood = new BABYLON.PBRMaterial("wood", scene);
+//         wood.reflectionTexture = eqTexture;
+//         wood.environmentIntensity = 1;
+//         wood.specularIntensity = 0.3;
+
+//         wood.reflectivityTexture = new BABYLON.Texture("textures/reflectivity.png", scene);
+//         wood.useMicroSurfaceFromReflectivityMapAlpha = true;
+
+//         wood.albedoColor = BABYLON.Color3.White();
+//         wood.albedoTexture = new BABYLON.Texture("textures/albedo.png", scene);
+//         // woodPlank.material = wood;
+
+    const maroniuMaterial = new BABYLON.PBRMaterial("maroniu");
+    
+    //Set the texture of the maroniuMaterial material
+    maroniuMaterial.albedoTexture = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg", scene);
+    maroniuMaterial.albedoTexture.uScale = 5.0;
+    maroniuMaterial.albedoTexture.vScale = 5.0;
+    
+    // Set the reflection from the environment texture
+    maroniuMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+    maroniuMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+    
+    // Control reflection intensity
+    maroniuMaterial.reflectionTexture.level = 1; // Adjust for more/less reflection
+    maroniuMaterial.environmentIntensity = 1.0; // The intensity of the environment texture on the object
+    
+    // Set other properties (optional)
+    maroniuMaterial.specularIntensity = 0.05; // Controls the shininess
+    maroniuMaterial.metallic = 0.1; // Metallic look
+    maroniuMaterial.roughness = 0.05; // Smoothness of the reflection
+
+    const gripiperMaterial = new BABYLON.PBRMaterial("gripiper");
+    
+    //Set the texture of the maroniuMaterial material
+    gripiperMaterial.albedoTexture = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Gri-piper.jpg", scene);
+    gripiperMaterial.albedoTexture.uScale = 5.0;
+    gripiperMaterial.albedoTexture.vScale = 5.0;
+    
+    // Set the reflection from the environment texture
+    gripiperMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+    gripiperMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+    
+    // Control reflection intensity
+    gripiperMaterial.reflectionTexture.level = 1; // Adjust for more/less reflection
+    gripiperMaterial.environmentIntensity = 1.0; // The intensity of the environment texture on the object
+    
+    // Set other properties (optional)
+    gripiperMaterial.specularIntensity = 0.05; // Controls the shininess
+    gripiperMaterial.metallic = 0.1; // Metallic look
+    gripiperMaterial.roughness = 0.05; // Smoothness of the reflection
+
+
+    const castaniuMaterial = new BABYLON.PBRMaterial("castaniu");
+    
+    //Set the texture of the maroniuMaterial material
+    castaniuMaterial.albedoTexture = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Castaniu.jpg", scene);
+    castaniuMaterial.albedoTexture.uScale = 5.0;
+    castaniuMaterial.albedoTexture.vScale = 5.0;
+    
+    // Set the reflection from the environment texture
+    castaniuMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+    castaniuMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+    
+    // Control reflection intensity
+    castaniuMaterial.reflectionTexture.level = 1; // Adjust for more/less reflection
+    castaniuMaterial.environmentIntensity = 1.0; // The intensity of the environment texture on the object
+    
+    // Set other properties (optional)
+    castaniuMaterial.specularIntensity = 0.05; // Controls the shininess
+    castaniuMaterial.metallic = 0.1; // Metallic look
+    castaniuMaterial.roughness = 0.05; // Smoothness of the reflection
+
+    const grideschisMaterial = new BABYLON.PBRMaterial("grideschis");
+    
+    //Set the texture of the maroniuMaterial material
+    grideschisMaterial.albedoTexture = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Gri-deschis-G603.jpg", scene);
+    grideschisMaterial.albedoTexture.uScale = 5.0;
+    grideschisMaterial.albedoTexture.vScale = 5.0;
+    
+    // Set the reflection from the environment texture
+    grideschisMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+    grideschisMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+    
+    // Control reflection intensity
+    grideschisMaterial.reflectionTexture.level = 1; // Adjust for more/less reflection
+    grideschisMaterial.environmentIntensity = 1.0; // The intensity of the environment texture on the object
+    
+    // Set other properties (optional)
+    grideschisMaterial.specularIntensity = 0.05; // Controls the shininess
+    grideschisMaterial.metallic = 0.1; // Metallic look
+    grideschisMaterial.roughness = 0.05; // Smoothness of the reflection
+
+    const silverwhiteMaterial = new BABYLON.PBRMaterial("silverwhite");
+    
+    //Set the texture of the maroniuMaterial material
+    silverwhiteMaterial.albedoTexture = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Silver-white.jpg", scene);
+    silverwhiteMaterial.albedoTexture.uScale = 5.0;
+    silverwhiteMaterial.albedoTexture.vScale = 5.0;
+    
+    // Set the reflection from the environment texture
+    silverwhiteMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+    silverwhiteMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+    
+    // Control reflection intensity
+    silverwhiteMaterial.reflectionTexture.level = 1; // Adjust for more/less reflection
+    silverwhiteMaterial.environmentIntensity = 1.0; // The intensity of the environment texture on the object
+    
+    // Set other properties (optional)
+    silverwhiteMaterial.specularIntensity = 0.05; // Controls the shininess
+    silverwhiteMaterial.metallic = 0.1; // Metallic look
+    silverwhiteMaterial.roughness = 0.05; // Smoothness of the reflection
+
+    const granitnegruMaterial = new BABYLON.PBRMaterial("granitnegru");
+    
+    //Set the texture of the maroniuMaterial material
+    granitnegruMaterial.albedoTexture = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Granit-negru.jpg", scene);
+    granitnegruMaterial.albedoTexture.uScale = 5.0;
+    granitnegruMaterial.albedoTexture.vScale = 5.0;
+    
+    // Set the reflection from the environment texture
+    granitnegruMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+    granitnegruMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+    
+    // Control reflection intensity
+    granitnegruMaterial.reflectionTexture.level = 1; // Adjust for more/less reflection
+    granitnegruMaterial.environmentIntensity = 1.0; // The intensity of the environment texture on the object
+    
+    // Set other properties (optional)
+    granitnegruMaterial.specularIntensity = 0.05; // Controls the shininess
+    granitnegruMaterial.metallic = 0.1; // Metallic look
+    granitnegruMaterial.roughness = 0.05; // Smoothness of the reflection
+
+
+    var monumentObject;
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/", "monument51ab.glb", scene, function(newMeshes){
+        //Option 5
+        
+//         //Option 4
+//         var triplanarMaterial = new BABYLON.TriPlanarMaterial("triplanar", scene);
+//         triplanarMaterial.diffuseTextureX = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg", scene);
+//         triplanarMaterial.diffuseTextureY = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg", scene);
+//         triplanarMaterial.diffuseTextureZ = triplanarMaterial.diffuseTextureX;
+
+// // var testBox = BABYLON.MeshBuilder.CreateBox("testBox", {size: 10}, scene);
+// // testBox.material = triplanarMaterial;
+
+//         triplanarMaterial.normalTextureX = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg", scene);
+//         triplanarMaterial.normalTextureY = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg", scene);
+//         triplanarMaterial.normalTextureZ = triplanarMaterial.normalTextureX;
+
+// // Optionally set bump textures for more detail
+// triplanarMaterial.bumpTextureX = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg", scene);
+// triplanarMaterial.bumpTextureY = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg", scene);
+// triplanarMaterial.bumpTextureZ = new BABYLON.Texture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg", scene);
+
+// // Adjust scaling for how the texture should be applied
+// triplanarMaterial.tileSize = 5;
+// triplanarMaterial.renderPassIds = null;
+
+// triplanarMaterial.specularColor = new BABYLON.Color3(1, 1, 1);  // Reduces shininess
+// triplanarMaterial.reflectionColor = new BABYLON.Color3(0.5, 0.5, 0.5);  // Adjust reflection
+
+        // Apply triplanar material to all meshes
+        monumentObject = newMeshes[0].getChildMeshes();
+        newMeshes[0].getChildMeshes().forEach(function(mesh) {
+           
+            if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+                mesh.material = maroniuMaterial;
+                mesh.hasVertexAlpha = false;
+            }
+
+        });
+        
+        //Option 3
+    //     newMeshes[0].getChildMeshes().forEach(function(mesh) {
+    //     // Apply maroniuMaterial to all relevant meshes
+    //     if (mesh.name.includes("Mesh") || mesh.name.includes("Box")) {
+    //         // Clone the material for each mesh (optional, to prevent global changes)
+    //         var meshMaterial = maroniuMaterial.clone("maroniuClone_" + mesh.name);
+    //         mesh.material = meshMaterial;
+    //         mesh.hasVertexAlpha = false;
+            
+    //         // Calculate scaling based on the mesh's bounding info (size)
+    //         var boundingInfo = mesh.getBoundingInfo();
+    //         var size = boundingInfo.boundingBox.extendSize;
+
+    //         // Adjust the texture scale dynamically based on the mesh dimensions
+    //         if (size.x > size.z) {
+    //             // Wide mesh, adjust uScale (horizontal scaling)
+    //             meshMaterial.albedoTexture.uScale = 3.0;  // Example value, you can tweak this
+    //             meshMaterial.albedoTexture.vScale = 1.0;
+    //         } else {
+    //             // Narrow or tall mesh, adjust vScale (vertical scaling)
+    //             meshMaterial.albedoTexture.uScale = 1.0;
+    //             meshMaterial.albedoTexture.vScale = 3.0;  // Example value
+    //         }
+    //     }
+    // });
+        
+        //Option 2
+        // var mergedMeshes = BABYLON.Mesh.MergeMeshes(newMeshes[0].getChildMeshes(), true, true);
+        // mergedMeshes.material = maroniuMaterial;
+        // mergedMeshes.hasVertexAlpha = false;
+        
+        //Option 1
+        var monument = newMeshes[0].getChildMeshes()[0];
+        
+        // newMeshes[0].getChildMeshes()[5].material = maroniuMaterial;
+        // newMeshes[0].getChildMeshes().forEach(function(mesh){
+        //     if (mesh.name.includes("Mesh") || mesh.name.includes("Box")) {
+        //     mesh.material = maroniuMaterial;
+        //     mesh.hasVertexAlpha = false;
+        //     }
+        // });
+        // monument.material = maroniuMaterial;
+        
+        var skybox = BABYLON.MeshBuilder.CreateBox("skyBoxref", {size:1000.0}, scene);
+        var skyboxMaterial = new BABYLON.StandardMaterial("skyBoxref", scene);
+        // skyboxMaterial.backFaceCulling = false;
+        // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", scene);
+        // skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        // skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        // skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        // skybox.material = skyboxMaterial;
+
+    var files = [
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/front.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/top.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/left.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/back.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/bottom.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/right.jpg"
+    ];
+        scene.environmentTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+
+    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture.CreateFromImages(files, scene);
+	skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+	skyboxMaterial.disableLighting = true;
+        // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", scene);
+    // skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+    skyboxMaterial.diffuseColor = new BABYLON.Color3(0.62, 0.93, 0.03);
+    skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+    skybox.material = skyboxMaterial;
+
+    monument.rotation.y = Math.PI/8;
+    monument.rotation.x = -Math.PI/8;
+
+
+
+        // Shadows
+	// var torus = BABYLON.Mesh.CreateTorus("torus", 4, 2, 30, scene, false);
+
+    var shadowGenerator = new BABYLON.ShadowGenerator(1024, light2);
+	shadowGenerator.addShadowCaster(torus);
+	shadowGenerator.useExponentialShadowMap = true;
+
+	var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, light3);
+	shadowGenerator2.addShadowCaster(torus);
+	shadowGenerator2.usePoissonSampling = true;
+
+	monument.receiveShadows = true;
+    });
+
+    
+    //buttons:
+    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+// Create a horizontal StackPanel to hold the buttons side by side
+var horizontalStackPanel = new BABYLON.GUI.StackPanel();
+horizontalStackPanel.isVertical = false; // Set to false for horizontal layout
+horizontalStackPanel.height = "100px";
+horizontalStackPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+horizontalStackPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+horizontalStackPanel.top = "250px";
+
+// Create the first button (Maroniu)
+var button1Panel = new BABYLON.GUI.StackPanel();
+button1Panel.width = "100px";
+button1Panel.height = "100px";
+button1Panel.isVertical = true;
+
+var button1 = BABYLON.GUI.Button.CreateImageOnlyButton("but1", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/maroniu-200.jpg");
+button1.width = "50px";
+button1.height = "50px";
+button1.color = "black";
+button1.image.detectPointerOnOpaqueOnly = true;
+
+var text1 = new BABYLON.GUI.TextBlock();
+text1.text = "Maroniu";
+text1.height = "20px";
+text1.color = "white";
+text1.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+button1Panel.addControl(button1);
+button1Panel.addControl(text1);
+
+// Create the second button (Gri Piper)
+var button2Panel = new BABYLON.GUI.StackPanel();
+button2Panel.width = "100px";
+button2Panel.height = "100px";
+button2Panel.isVertical = true;
+
+var button2 = BABYLON.GUI.Button.CreateImageOnlyButton("but2", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/gri-piper-200.jpg");
+button2.width = "50px";
+button2.height = "50px";
+button2.color = "black";
+button2.image.detectPointerOnOpaqueOnly = true;
+
+var text2 = new BABYLON.GUI.TextBlock();
+text2.text = "Gri Piper";
+text2.height = "20px";
+text2.color = "white";
+text2.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+button2Panel.addControl(button2);
+button2Panel.addControl(text2);
+
+// Create the third button (Castaniu)
+var button3Panel = new BABYLON.GUI.StackPanel();
+button3Panel.width = "100px";
+button3Panel.height = "100px";
+button3Panel.isVertical = true;
+
+var button3 = BABYLON.GUI.Button.CreateImageOnlyButton("but3", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/castaniu-200.jpg");
+button3.width = "50px";
+button3.height = "50px";
+button3.color = "black";
+button3.image.detectPointerOnOpaqueOnly = true;
+
+var text3 = new BABYLON.GUI.TextBlock();
+text3.text = "Castaniu";
+text3.height = "20px";
+text3.color = "white";
+text3.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+button3Panel.addControl(button3);
+button3Panel.addControl(text3);
+
+// Add a 20px gap between the buttons
+button3Panel.paddingLeft = "10px";
+
+// Create the fourth button (Gri deschis)
+var button4Panel = new BABYLON.GUI.StackPanel();
+button4Panel.width = "100px";
+button4Panel.height = "100px";
+button4Panel.isVertical = true;
+
+var button4 = BABYLON.GUI.Button.CreateImageOnlyButton("but4", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/gri-deschis-200.jpg");
+button4.width = "50px";
+button4.height = "50px";
+button4.color = "black";
+button4.image.detectPointerOnOpaqueOnly = true;
+
+var text4 = new BABYLON.GUI.TextBlock();
+text4.text = "Gri deschis";
+text4.height = "20px";
+text4.color = "white";
+text4.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+button4Panel.addControl(button4);
+button4Panel.addControl(text4);
+
+// Add a 20px gap between the buttons
+button4Panel.paddingLeft = "10px";
+
+// Create the fifth button (Silver white)
+var button5Panel = new BABYLON.GUI.StackPanel();
+button5Panel.width = "100px";
+button5Panel.height = "100px";
+button5Panel.isVertical = true;
+
+var button5 = BABYLON.GUI.Button.CreateImageOnlyButton("but5", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/silver-white-200.jpg");
+button5.width = "50px";
+button5.height = "50px";
+button5.color = "black";
+button5.image.detectPointerOnOpaqueOnly = true;
+
+var text5 = new BABYLON.GUI.TextBlock();
+text5.text = "Silver white";
+text5.height = "20px";
+text5.color = "white";
+text5.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+button5Panel.addControl(button5);
+button5Panel.addControl(text5);
+
+// Add a 20px gap between the buttons
+button5Panel.paddingLeft = "10px";
+
+// Create the sixth button (Granit negru)
+var button6Panel = new BABYLON.GUI.StackPanel();
+button6Panel.width = "110px";
+button6Panel.height = "100px";
+button6Panel.isVertical = true;
+
+var button6 = BABYLON.GUI.Button.CreateImageOnlyButton("but6", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/granit-negru-200.jpg");
+button6.width = "50px";
+button6.height = "50px";
+button6.color = "black";
+button6.image.detectPointerOnOpaqueOnly = true;
+
+var text6 = new BABYLON.GUI.TextBlock();
+text6.text = "Granit negru";
+text6.height = "20px";
+text6.color = "white";
+text6.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+button6Panel.addControl(button6);
+button6Panel.addControl(text6);
+
+// Add a 20px gap between the buttons
+button6Panel.paddingLeft = "10px";
+
+// Add both button panels to the horizontal StackPanel
+horizontalStackPanel.addControl(button1Panel);
+horizontalStackPanel.addControl(button2Panel);
+horizontalStackPanel.addControl(button3Panel);
+horizontalStackPanel.addControl(button4Panel);
+horizontalStackPanel.addControl(button5Panel);
+horizontalStackPanel.addControl(button6Panel);
+
+
+// Add the horizontal StackPanel to the advanced texture
+advancedTexture.addControl(horizontalStackPanel);
+
+// Events to change color of the object by clicking the buttons
+button1.onPointerClickObservable.add(function() {
+    monumentObject.forEach(function(mesh) {
+        if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+            mesh.material = maroniuMaterial;
+            mesh.hasVertexAlpha = false;
+        }
+    });
+});
+
+button2.onPointerClickObservable.add(function() {
+    monumentObject.forEach(function(mesh) {
+        if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+            mesh.material = gripiperMaterial;
+            mesh.hasVertexAlpha = false;
+        }
+    });
+});
+
+button3.onPointerClickObservable.add(function() {
+    monumentObject.forEach(function(mesh) {
+        if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+            mesh.material = castaniuMaterial;
+            mesh.hasVertexAlpha = false;
+        }
+    });
+});
+
+button4.onPointerClickObservable.add(function() {
+    monumentObject.forEach(function(mesh) {
+        if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+            mesh.material = grideschisMaterial;
+            mesh.hasVertexAlpha = false;
+        }
+    });
+});
+
+button5.onPointerClickObservable.add(function() {
+    monumentObject.forEach(function(mesh) {
+        if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+            mesh.material = silverwhiteMaterial;
+            mesh.hasVertexAlpha = false;
+        }
+    });
+});
+
+button6.onPointerClickObservable.add(function() {
+    monumentObject.forEach(function(mesh) {
+        if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+            mesh.material = granitnegruMaterial;
+            mesh.hasVertexAlpha = false;
+        }
+    });
+});
+
+// window.addEventListener("keydown", function (evt) {
+        
+//         // draw SSAO with scene when pressed "1"
+//         if (evt.keyCode === 49) {
+//             monumentObject.forEach(function(mesh) {
+           
+//             if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+//                 mesh.material = maroniuMaterial;
+//                 mesh.hasVertexAlpha = false;
+//             }
+//         });
+//         }
+//         else if (evt.keyCode === 50) {
+// 			monumentObject.forEach(function(mesh) {
+//                if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+//                     mesh.material = gripiperMaterial;
+//                     mesh.hasVertexAlpha = false;
+//                 }
+//             });
+//         }
+//     });
+  
+
+    return scene;
+};

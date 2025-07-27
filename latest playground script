@@ -1,0 +1,594 @@
+// latest playground version
+function computeBoundingBoxCenter(meshes) {
+    let min = new BABYLON.Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+    let max = new BABYLON.Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
+    meshes.forEach(mesh => {
+        if (!mesh.getBoundingInfo) return;
+
+        const boundingBox = mesh.getBoundingInfo().boundingBox;
+        min = BABYLON.Vector3.Minimize(min, boundingBox.minimumWorld);
+        max = BABYLON.Vector3.Maximize(max, boundingBox.maximumWorld);
+    });
+
+    return BABYLON.Vector3.Center(min, max);
+}
+
+var createConcreteGround = function (scene) {
+    const ground = BABYLON.MeshBuilder.CreateGround("ground", {
+    width: 500,
+    height: 500
+}, scene);
+ground.receiveShadows = true;
+
+// Create PBR material for concrete
+const concretePBR = new BABYLON.PBRMaterial("concretePBR", scene);
+
+// Base path to your GitHub-hosted files
+const basePath = "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/";
+
+// Assign textures
+concretePBR.albedoTexture = new BABYLON.Texture(basePath + "Concrete012_1K-PNG_Color.png", scene);
+concretePBR.bumpTexture = new BABYLON.Texture(basePath + "Concrete012_1K-PNG_NormalGL.png", scene);
+concretePBR.roughnessTexture = new BABYLON.Texture(basePath + "Concrete012_1K-PNG_Roughness.png", scene);
+concretePBR.parallaxTexture = new BABYLON.Texture(basePath + "Concrete012_1K-PNG_Displacement.png", scene);
+
+concretePBR.metallic = 0;                  // Concrete is non-metal
+concretePBR.roughness = 1.0;               // Matte surface
+concretePBR.parallaxScaleBias = 0.02;      // Subtle height effect
+
+// Tile the texture to cover large surface naturally
+const tiling = 5;
+[
+    concretePBR.albedoTexture,
+    concretePBR.bumpTexture,
+    concretePBR.roughnessTexture,
+    concretePBR.parallaxTexture
+].forEach(tex => {
+    tex.uScale = tiling;
+    tex.vScale = tiling;
+});
+concretePBR.environmentIntensity = 2; // 1 is default; lower = darker
+concretePBR.albedoColor = new BABYLON.Color3(0.42, 0.42, 0.42, 0.78);
+// Assign the material to the ground
+ground.material = concretePBR;
+    concretePBR.alpha = 0.6;
+
+}
+
+createGrid = function(scene){
+    // Create the ground plane
+    const ground = BABYLON.MeshBuilder.CreateGround("grid", { width: 500, height: 500 }, scene);
+
+    // Create a grid material
+    const gridMaterial = new BABYLON.GridMaterial("grid", scene);
+    gridMaterial.majorUnitFrequency = 5;  // major grid line spacing
+    gridMaterial.minorUnitVisibility = 0.45;
+    gridMaterial.gridRatio = 5;         // size of each grid cell
+    gridMaterial.backFaceCulling = false;
+    gridMaterial.mainColor = new BABYLON.Color3(1, 1, 1); // white
+    gridMaterial.lineColor = new BABYLON.Color3(0.5, 0.5, 0.5); // gray
+
+    // Apply the material
+    ground.material = gridMaterial;
+    gridMaterial.opacity = 0.3;
+}
+
+var createScene = function () {
+    // This creates a basic Babylon Scene object (non-mesh)
+    var scene = new BABYLON.Scene(engine);
+
+    // This creates and positions a free camera (non-mesh)
+    var camera = new BABYLON.ArcRotateCamera("camera", 33, BABYLON.Tools.ToRadians(77.3), 200, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, true);
+
+    camera.lowerRadiusLimit = 3;
+    camera.upperRadiusLimit = 920;
+    camera.zoomToMouseLocation = true;
+    camera.panningSensibility = 50;
+
+    createConcreteGround(scene);
+    createGrid(scene);
+    // This targets the camera to scene origin
+    // camera.setTarget(new BABYLON.Vector3(0, 15000, 0));
+
+    // This attaches the camera to the canvas
+    camera.attachControl(canvas, true);
+
+    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+    var light = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(0, 0, 0), scene);
+    var light2 = new BABYLON.HemisphericLight("hemiLight2", new BABYLON.Vector3(200, -1, -200), scene);
+    var light3 = new BABYLON.DirectionalLight("directional1", new BABYLON.Vector3(30, 10, -60), scene);
+
+    // Default intensity is 1. Let's dim the light a small amount
+    light.intensity = 0.3;
+    light2.intensity = 0.3;
+    light3.intensity = 0.3;
+
+    // var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:550.0}, scene);
+    // var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+    // skyboxMaterial.backFaceCulling = false;
+    var files = [
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/artificial-grass-turf-pros-cons-pexels-free-nature-stock-7174-1366x768.webp",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/top.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/artificial-grass-turf-pros-cons-pexels-free-nature-stock-7174-1366x768.webp",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/artificial-grass-turf-pros-cons-pexels-free-nature-stock-7174-1366x768.webp",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/bottom.jpg",
+        "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/artificial-grass-turf-pros-cons-pexels-free-nature-stock-7174-1366x768.webp"
+    ];
+    // skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture.CreateFromImages(files, scene);
+    // skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+    // skyboxMaterial.disableLighting = true;
+    // skybox.material = skyboxMaterial;
+
+    scene.onPointerDown = function (evt, pickInfo) {
+        if (pickInfo.hit && (pickInfo.pickedMesh.name.includes("BOX") || pickInfo.pickedMesh.name.includes("Box") || pickInfo.pickedMesh.name.includes("Mesh"))) {
+            // Focus on the picked mesh if it is the one you're interested in
+            camera.focusOn([pickInfo.pickedMesh], true);
+        }
+    };
+
+    var createTextureMaterial = function (textureName, textureUrl, isBuciardatTexture = false) {
+        const textureMaterial = new BABYLON.PBRMaterial("maroniu");
+
+        //Set the texture of the maroniuMaterial material
+        textureMaterial.albedoTexture = new BABYLON.Texture(textureUrl, scene);
+        textureMaterial.albedoTexture.uScale = 5.0;
+        textureMaterial.albedoTexture.vScale = 5.0;
+
+        if (isBuciardatTexture) {
+            textureMaterial.albedoTexture.level = 2.5;
+        }
+
+        // Set the reflection from the environment texture
+        textureMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+        textureMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.CUBIC_MODE;
+
+        // Control reflection intensity
+        textureMaterial.reflectionTexture.level = isBuciardatTexture ? 0.1 : 1;
+        // textureMaterial.reflectionTexture.level = 1; // Adjust for more/less reflection
+        textureMaterial.environmentIntensity = isBuciardatTexture ? 0.3 : 1;
+        // textureMaterial.environmentIntensity = 1.0; // The intensity of the environment texture on the object
+
+        // Set other properties (optional)
+        textureMaterial.specularIntensity = 0.05; // Controls the shininess
+        textureMaterial.metallic = isBuciardatTexture ? 0 : 0.1;
+        // textureMaterial.metallic = 0.1; // Metallic look
+        // textureMaterial.roughness = 0.05; // Smoothness of the reflection
+
+        textureMaterial.roughness = isBuciardatTexture ? 0.5 : 0.05;
+
+        return textureMaterial;
+    }
+
+    const eqTexture = new BABYLON.EquiRectangularCubeTexture('https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg', scene, 512);
+
+    const maroniuMaterial = createTextureMaterial("maroniu", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu.jpg");
+    const gripiperMaterial = createTextureMaterial("gripiper", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Gri-piper.jpg");
+    const castaniuMaterial = createTextureMaterial("castaniu", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Castaniu.jpg");
+    const grideschisMaterial = createTextureMaterial("grideschis", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Gri-deschis-G603.jpg");
+    const silverwhiteMaterial = createTextureMaterial("silverwhite", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Silver-white.jpg");
+    const granitnegruMaterial = createTextureMaterial("granitnegru", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Granit-negru.jpg");
+
+    const maroniuBuciardatMaterial = createTextureMaterial("maroniubuciardat", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu_Buciardat.jpg", true);
+    const gripiperBuciardatMaterial = createTextureMaterial("gripiperbuciardat", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Gri_Piper_Buciardat.jpg", true);
+    const castaniuBuciardatMaterial = createTextureMaterial("castaniubuciardat", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Maroniu_Buciardat.jpg", true);
+    const grideschisBuciardatMaterial = createTextureMaterial("grideschisbuciardat", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Gri_Deschis_Buciardat.jpg", true);
+    const silverwhiteBuciardatMaterial = createTextureMaterial("silverwhitebuciardat", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Silver-white-min_Buciardat.jpg", true);
+    const granitnegruBuciardatMaterial = createTextureMaterial("granitnegrubuciardat", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Granit_Negru_Buciardat.jpg", true);
+
+    var monumentObject;
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/", "37 Ciucodi S 102x80x8 11.glb", scene, function (newMeshes) {
+
+        // Apply triplanar material to all meshes
+        monumentObject = newMeshes[0].getChildMeshes();
+        newMeshes[0].getChildMeshes().forEach(function (mesh) {
+
+            if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("") || mesh.name.includes("BOX") || mesh.name.includes("Monument") || mesh.name.includes("Aripioare")) {
+                mesh.material = maroniuMaterial;
+                mesh.hasVertexAlpha = false;
+            }
+
+            if (mesh.name.includes("buciardat")) {
+                mesh.material = maroniuBuciardatMaterial;
+                mesh.hasVertexAlpha = false;
+            }
+
+            if (mesh.name.includes("textura-neagra")) {
+                mesh.material = granitnegruMaterial;
+                mesh.hasVertexAlpha = false;
+            }
+        });
+
+    const modelMeshes = newMeshes[0].getChildMeshes();
+    const center = computeBoundingBoxCenter(modelMeshes);
+    center.y -= 20; // shift the view slightly above center
+
+    camera.setTarget(center);
+    camera.beta = BABYLON.Tools.ToRadians(80);
+    
+        //Option 1
+        var monument = newMeshes[0].getChildMeshes()[0];
+
+        scene.environmentTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/Cimitir-Privat-Buzau-11-600x400.jpg", scene);
+
+        monument.rotation.y = Math.PI / 8;
+        monument.rotation.x = -Math.PI / 8;
+
+        var shadowGenerator = new BABYLON.ShadowGenerator(1024, light2);
+        shadowGenerator.addShadowCaster(torus);
+        shadowGenerator.useExponentialShadowMap = true;
+
+        var shadowGenerator2 = new BABYLON.ShadowGenerator(1024, light3);
+        shadowGenerator2.addShadowCaster(torus);
+        shadowGenerator2.usePoissonSampling = true;
+
+        monument.receiveShadows = true;
+    });
+
+    
+    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    // Create a horizontal StackPanel to hold the buttons side by side
+    var horizontalTextureSelectionStackPanel = new BABYLON.GUI.StackPanel();
+    horizontalTextureSelectionStackPanel.isVertical = false; // Set to false for horizontal layout
+    horizontalTextureSelectionStackPanel.height = "100px";
+    horizontalTextureSelectionStackPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    horizontalTextureSelectionStackPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    horizontalTextureSelectionStackPanel.top = "250px";
+
+    createTextureButtonPanel = function (name, smallTextureUrl) {
+        var buttonPanel = new BABYLON.GUI.StackPanel();
+        buttonPanel.width = "110px";
+        buttonPanel.height = "100px";
+        buttonPanel.isVertical = true;
+
+        return buttonPanel;
+    }
+
+
+    createTextureButton = function (buttonName, smallTextureUrl) {
+        var button = BABYLON.GUI.Button.CreateImageOnlyButton(buttonName, smallTextureUrl);
+        button.width = "80px";
+        button.height = "80px";
+        button.color = "black";
+        button.image.detectPointerOnOpaqueOnly = true;
+
+        return button;
+    }
+
+    createTextBlock = function (textContent) {
+        var textBlock = new BABYLON.GUI.TextBlock();
+        textBlock.text = textContent;
+        textBlock.height = "20px";
+        textBlock.color = "white";
+        textBlock.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+
+        return textBlock;
+    }
+
+    var button1Panel = createTextureButtonPanel("Maroniu", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/maroniu-200.jpg");
+    var button1 = createTextureButton("Maroniu", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/maroniu-200.jpg");
+    var text1 = createTextBlock("Maroniu");
+
+    button1Panel.addControl(button1);
+    button1Panel.addControl(text1);
+
+    // Create the second button (Gri Piper)
+    var button2Panel = createTextureButtonPanel("Gri Piper", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/gri-piper-200.jpg");
+    var button2 = createTextureButton("Gri Piper", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/gri-piper-200.jpg");
+    var text2 = createTextBlock("Gri Piper");
+
+    button2Panel.addControl(button2);
+    button2Panel.addControl(text2);
+
+    // Create the third button (Castaniu)
+    var button3Panel = createTextureButtonPanel("Castaniu", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/castaniu-200.jpg");
+    var button3 = createTextureButton("Castaniu", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/castaniu-200.jpg");
+    var text3 = createTextBlock("Castaniu");
+
+    button3Panel.addControl(button3);
+    button3Panel.addControl(text3);
+
+    // Add a 20px gap between the buttons
+    button3Panel.paddingLeft = "10px";
+
+    // Create the fourth button (Gri deschis)
+    var button4Panel = createTextureButtonPanel("Gri deschis", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/gri-deschis-200.jpg");
+    var button4 = createTextureButton("Gri deschis", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/gri-deschis-200.jpg");
+    var text4 = createTextBlock("Gri deschis");
+
+    button4Panel.addControl(button4);
+    button4Panel.addControl(text4);
+
+    // Add a 20px gap between the buttons
+    button4Panel.paddingLeft = "10px";
+
+    // Create the fifth button (Silver white)
+    var button5Panel = createTextureButtonPanel("Silver white", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/silver-white-200.jpg");
+    var button5 = createTextureButton("Silver white", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/silver-white-200.jpg");
+    var text5 = createTextBlock("Silver white");
+
+    button5Panel.addControl(button5);
+    button5Panel.addControl(text5);
+
+    // Add a 20px gap between the buttons
+    button5Panel.paddingLeft = "10px";
+
+    // Create the sixth button (Granit negru)
+    var button6Panel = createTextureButtonPanel("Granit negru", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/granit-negru-200.jpg");
+    var button6 = createTextureButton("Granit negru", "https://raw.githubusercontent.com/Ionea/I-AM-DIGITAL/main/granit-negru-200.jpg");
+    var text6 = createTextBlock("Granit negru");
+
+    button6Panel.addControl(button6);
+    button6Panel.addControl(text6);
+
+    // Add a 20px gap between the buttons
+    button6Panel.paddingLeft = "10px";
+
+    // Add both button panels to the horizontal StackPanel
+    horizontalTextureSelectionStackPanel.addControl(button1Panel);
+    horizontalTextureSelectionStackPanel.addControl(button2Panel);
+    horizontalTextureSelectionStackPanel.addControl(button3Panel);
+    horizontalTextureSelectionStackPanel.addControl(button4Panel);
+    horizontalTextureSelectionStackPanel.addControl(button5Panel);
+    horizontalTextureSelectionStackPanel.addControl(button6Panel);
+
+    // Add the horizontal StackPanel to the advanced texture
+    advancedTexture.addControl(horizontalTextureSelectionStackPanel);
+
+    function applyMaterials(baseMaterial, buciardatMaterial) {
+        monumentObject.forEach(function (mesh) {
+            const name = mesh.name.toLowerCase();
+
+            if (name.includes("buciardat")) {
+                mesh.material = buciardatMaterial;
+            } else if (name.includes("textura-neagra")) {
+                mesh.material = granitnegruMaterial;
+            } else if (
+                name.includes("mesh") ||
+                name.includes("box") ||
+                name.includes("monument") ||
+                name.includes("aripioare") ||
+                name !== "" // Optional: this doesn't add much since all strings include ""
+            ) {
+                mesh.material = baseMaterial;
+            }
+
+            mesh.hasVertexAlpha = false;
+        });
+    }
+
+    // Events to change color of the object by clicking the buttons
+    button1.onPointerClickObservable.add(function () {
+        applyMaterials(maroniuMaterial, maroniuBuciardatMaterial);
+    });
+
+    button2.onPointerClickObservable.add(function () {
+        applyMaterials(gripiperMaterial, gripiperBuciardatMaterial);
+    });
+
+    button3.onPointerClickObservable.add(function () {
+        applyMaterials(castaniuMaterial, castaniuBuciardatMaterial);
+    });
+
+    button4.onPointerClickObservable.add(function () {
+        applyMaterials(grideschisMaterial, grideschisBuciardatMaterial);
+    });
+
+    button5.onPointerClickObservable.add(function () {
+        applyMaterials(silverwhiteMaterial, silverwhiteBuciardatMaterial);
+    });
+
+    button6.onPointerClickObservable.add(function () {
+        applyMaterials(granitnegruMaterial, granitnegruBuciardatMaterial);
+    });
+
+    // window.addEventListener("keydown", function (evt) {
+
+    //         // draw SSAO with scene when pressed "1"
+    //         if (evt.keyCode === 49) {
+    //             monumentObject.forEach(function(mesh) {
+
+    //             if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+    //                 mesh.material = maroniuMaterial;
+    //                 mesh.hasVertexAlpha = false;
+    //             }
+    //         });
+    //         }
+    //         else if (evt.keyCode === 50) {
+    // 			monumentObject.forEach(function(mesh) {
+    //                if (mesh.name.includes("Mesh") || mesh.name.includes("Box") || mesh.name.includes("BOX")) {
+    //                     mesh.material = gripiperMaterial;
+    //                     mesh.hasVertexAlpha = false;
+    //                 }
+    //             });
+    //         }
+    //     });
+
+    // add buttons
+    var buttonbox = document.createElement('div');
+    buttonbox.id = "buttonbox";
+    buttonbox.style.position = "absolute";
+    buttonbox.style.top = "60px";
+    buttonbox.style.left = "90%";
+    //buttonbox.style.border = "5pt inset blue";
+    buttonbox.style.padding = "2pt";
+    buttonbox.style.paddingRight = "2pt";
+    buttonbox.style.width = "8em";
+    buttonbox.style.display = "block";
+    document.body.appendChild(buttonbox);
+
+    var tTag = document.createElement('div');
+    tTag.id = "choose";
+    tTag.textContent = "Vederi predefinite";
+    tTag.style.textAlign = "center";
+    tTag.style.width = "96%";
+    tTag.style.fontSize = "1.0em";
+    tTag.style.color = "white";
+    buttonbox.appendChild(tTag);
+
+    var b10 = document.createElement('button');
+    b10.id = "setAnterior";
+    b10.textContent = "Fata";
+    b10.style.display = "block";
+    b10.style.width = "100%";
+    b10.style.fontSize = "1.1em";
+    buttonbox.appendChild(b10);
+    b10.onclick = function () {
+        setCamAnterior();
+        setCamAnterior();
+    }
+
+    var b11 = document.createElement('button');
+    b11.id = "setPosterior";
+    b11.textContent = "Spate";
+    b11.style.display = "block";
+    b11.style.width = "100%";
+    b11.style.fontSize = "1.1em";
+    buttonbox.appendChild(b11);
+    b11.onclick = function () {
+        setCamPosterior();
+        setCamPosterior();
+    }
+
+    var b8 = document.createElement('button');
+    b8.id = "setLateralLeft";
+    b8.textContent = "Stanga";
+    b8.style.display = "block";
+    b8.style.width = "100%";
+    b8.style.fontSize = "1.1em";
+    buttonbox.appendChild(b8);
+    b8.onclick = function () {
+        setCamLateralLeft();
+        setCamLateralLeft();
+    }
+
+    var b9 = document.createElement('button');
+    b9.id = "setLateralright";
+    b9.textContent = "Dreapta";
+    b9.style.display = "block";
+    b9.style.width = "100%";
+    b9.style.fontSize = "1.1em";
+    buttonbox.appendChild(b9);
+    b9.onclick = function () {
+        setCamLateralRight();
+        setCamLateralRight();
+    }
+
+    var b12 = document.createElement('button');
+    b12.id = "setSuperior";
+    b12.textContent = "Superioara";
+    b12.style.display = "block";
+    b12.style.width = "100%";
+    b12.style.fontSize = "1.1em";
+    buttonbox.appendChild(b12);
+    b12.onclick = function () {
+        setCamSuperior();
+        setCamSuperior();
+    }
+
+    var b13 = document.createElement('button');
+    b13.id = "setVase";
+    b13.textContent = "Vaza";
+    b13.style.display = "block";
+    b13.style.width = "100%";
+    b13.style.fontSize = "1.1em";
+    buttonbox.appendChild(b13);
+    b13.onclick = function () {
+        setVase();
+        setVase();
+    }
+
+    var b14 = document.createElement('button');
+    b14.id = "setCross";
+    b14.textContent = "Cruce";
+    b14.style.display = "block";
+    b14.style.width = "100%";
+    b14.style.fontSize = "1.1em";
+    buttonbox.appendChild(b14);
+    b14.onclick = function () {
+        setCross();
+        setCross();
+    }
+
+
+    scene.onDispose = () => {
+        if (document.getElementById('buttonbox')) {
+            document.getElementById('buttonbox').parentNode.removeChild(document.getElementById('buttonbox'));
+        }
+    }
+
+    //-----------------------------------------------------------
+
+    var fullCamDistance = 230;
+    var isoCamDistance = 30;
+    var speed = 45;
+    var frameCount = 100;
+    var camEndPos;
+    var ease = new BABYLON.CubicEase();
+    ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+
+    var setCross = function () {
+        //new BABYLON.ArcRotateCamera("camera", 33, BABYLON.Tools.ToRadians(77.3), 200, BABYLON.Vector3.Zero(), scene);
+        var cam = scene.activeCamera;
+        cam.alpha = 2.4074;
+        cam.beta = 1.5249;
+        cam.radius = 63.35;
+        // cam.position.y = -10;
+        cam.setTarget(new BABYLON.Vector3(41.02, 51, 0.01));
+        //BABYLON.Animation.CreateAndStartAnimation('at4', cam, 'position', speed, frameCount, cam.position, camEndPos, 0, ease);
+    };
+
+    var setCamLateralLeft = function () {
+        var cam = scene.activeCamera;
+        cam.alpha = 0.482;
+        cam.beta = Math.PI / 2; // 1.57
+        cam.radius = fullCamDistance;
+        cam.setTarget(BABYLON.Vector3.Zero());
+    };
+
+    var setCamLateralRight = function () {
+        var cam = scene.activeCamera;
+        cam.alpha = 2.7;
+        cam.beta = Math.PI / 2; // 1.57
+        cam.radius = fullCamDistance;
+        cam.setTarget(BABYLON.Vector3.Zero());
+    };
+
+    var setCamPosterior = function () {
+        var cam = scene.activeCamera;
+        cam.alpha = -1.6;
+        cam.beta = Math.PI / 2;
+        cam.radius = fullCamDistance;
+        cam.setTarget(BABYLON.Vector3.Zero());
+    };
+
+    var setCamAnterior = function () {
+        var cam = scene.activeCamera;
+        cam.alpha = Math.PI / 2;
+        cam.beta = Math.PI / 2; // 1.57
+        cam.radius = fullCamDistance;
+        cam.setTarget(BABYLON.Vector3.Zero());
+    };
+
+    var setCamSuperior = function () {
+        var cam = scene.activeCamera;
+        cam.alpha = 1.5809;
+        cam.beta = 0.4729;
+        cam.radius = fullCamDistance;
+        cam.target = new BABYLON.Vector3(0, 15, 0);
+    };
+
+    var setVase = function () {
+        var cam = scene.activeCamera;
+        cam.alpha = 0.8875
+        cam.beta = 0.8383
+        cam.radius = 63.39;
+        cam.target = new BABYLON.Vector3(52.67, -32.50, 0.01);
+    };
+
+    setCamAnterior();
+
+    return scene;
+};
